@@ -1,5 +1,6 @@
 package com.example.prac.DTO.data;
 
+import com.example.prac.model.dataEntity.Coordinates;
 import com.example.prac.model.dataEntity.FuelType;
 import com.example.prac.model.dataEntity.VehicleType;
 import lombok.Data;
@@ -8,7 +9,7 @@ import lombok.Data;
 public class VehicleDTO {
     private int id;
     private String name;
-    private Long coordinatesId;
+    private Coordinates coordinates;
     private VehicleType type;
     private Integer enginePower;
     private long numberOfWheels;

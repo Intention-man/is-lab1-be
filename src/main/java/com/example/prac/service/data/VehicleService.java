@@ -2,6 +2,7 @@ package com.example.prac.service.data;
 
 import com.example.prac.DTO.data.VehicleDTO;
 import com.example.prac.mappers.impl.VehicleMapper;
+import com.example.prac.model.dataEntity.Coordinates;
 import com.example.prac.model.dataEntity.Vehicle;
 import com.example.prac.repository.data.CoordinatesRepository;
 import com.example.prac.repository.data.VehicleRepository;
@@ -28,7 +29,7 @@ public class VehicleService {
         Vehicle vehicle = vehicleMapper.mapFrom(vehicleDTO);
         vehicle.setCreationDate(ZonedDateTime.now());
 
-        if (!coordinatesRepository.existsById(Math.toIntExact(vehicleDTO.getCoordinatesId()))) {
+        if (!coordinatesRepository.existsById(Math.toIntExact(vehicleDTO.getCoordinates().getId()))) {
             throw new RuntimeException("Coordinates not found");
         }
 
@@ -53,18 +54,23 @@ public class VehicleService {
         return vehicleRepository.findById(vehicleId).map(existingVehicle -> {
             VehicleDTO existingVehicleDto = vehicleMapper.mapTo(existingVehicle);
             Optional.ofNullable(vehicleDTO.getName()).ifPresent(existingVehicleDto::setName);
-            Optional.ofNullable(vehicleDTO.getCoordinatesId()).ifPresent(coordinatesId -> {
+            Optional.ofNullable(vehicleDTO.getCoordinates().getId()).ifPresent(coordinatesId -> {
                 if (!coordinatesRepository.existsById(Math.toIntExact(coordinatesId))) {
                     throw new RuntimeException("Coordinates not found");
                 }
-                existingVehicleDto.setCoordinatesId(coordinatesId);
+                existingVehicleDto
+                        .setCoordinates(coordinatesRepository.getReferenceById((int) coordinatesId.longValue()));
             });
             Optional.ofNullable(vehicleDTO.getType()).ifPresent(existingVehicleDto::setType);
-            Optional.ofNullable(vehicleDTO.getEnginePower()).filter(ep -> ep > 0).ifPresent(existingVehicleDto::setEnginePower);
-            Optional.of(vehicleDTO.getNumberOfWheels()).filter(nw -> nw > 0).ifPresent(existingVehicleDto::setNumberOfWheels);
+            Optional.ofNullable(vehicleDTO.getEnginePower()).filter(ep -> ep > 0)
+                    .ifPresent(existingVehicleDto::setEnginePower);
+            Optional.of(vehicleDTO.getNumberOfWheels()).filter(nw -> nw > 0)
+                    .ifPresent(existingVehicleDto::setNumberOfWheels);
             Optional.of(vehicleDTO.getCapacity()).filter(c -> c > 0).ifPresent(existingVehicleDto::setCapacity);
-            Optional.ofNullable(vehicleDTO.getDistanceTravelled()).filter(dt -> dt > 0).ifPresent(existingVehicleDto::setDistanceTravelled);
-            Optional.ofNullable(vehicleDTO.getFuelConsumption()).filter(fc -> fc > 0).ifPresent(existingVehicleDto::setFuelConsumption);
+            Optional.ofNullable(vehicleDTO.getDistanceTravelled()).filter(dt -> dt > 0)
+                    .ifPresent(existingVehicleDto::setDistanceTravelled);
+            Optional.ofNullable(vehicleDTO.getFuelConsumption()).filter(fc -> fc > 0)
+                    .ifPresent(existingVehicleDto::setFuelConsumption);
             Optional.ofNullable(vehicleDTO.getFuelType()).ifPresent(existingVehicleDto::setFuelType);
             return vehicleMapper.mapTo(vehicleRepository.save(vehicleMapper.mapFrom(existingVehicleDto)));
         }).orElseThrow(() -> new RuntimeException("Vehicle doesn't exist"));
@@ -73,8 +79,6 @@ public class VehicleService {
     public void delete(int vehicleId) {
         vehicleRepository.deleteById(vehicleId);
     }
-
-
 
     public void deleteVehiclesByFuelConsumption(double targetFuelConsumption) {
         try (Session session = sessionFactory.openSession()) {

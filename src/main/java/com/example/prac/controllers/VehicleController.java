@@ -67,8 +67,8 @@ public class VehicleController {
         return ResponseEntity.ok(vehicleService.getUniqueFuelConsumptions());
     }
 
-    @GetMapping("/find-by-type")
-    public ResponseEntity<List<Object[]>> findVehiclesByType(@RequestParam String type) {
+    @PostMapping("/find-by-type")
+    public ResponseEntity<List<Object[]>> findVehiclesByType(@RequestBody String type) {
         return ResponseEntity.ok(vehicleService.findVehiclesByType(type));
     }
 
